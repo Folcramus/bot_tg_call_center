@@ -7,8 +7,8 @@ from dotenv import load_dotenv, find_dotenv
 from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from func import CreateElement, UpdateElement, GetElement, GetElementChatUser, GetElementIdTopicChat, UpdateoOperatorElement, GetElementChat2User
+from GoogleTableFunc import GetPhoneTable
 from classesBot import MyDialog
-from conf import Connect
 from aiogram.fsm.context import FSMContext
 
 load_dotenv(find_dotenv())
@@ -27,11 +27,36 @@ async def process_start_command(message: types.Message, state: FSMContext):
             "оператор (рабочее время 07:00 - 18:00 без выходных)")
     else:
         kb = [
-            [types.KeyboardButton(text="Поделится номером", request_contact=True)]
+            [types.KeyboardButton(text="Поделится номером")]
         ]
         board = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, one_time_keyboard=True)
         await message.answer("Здравствуйте! Нажмите на кнопку поделится номером", reply_markup=board)
-        await state.set_state(MyDialog.otvet)
+
+@dp.message(F.text.lower()  == 'поделится номером')
+async def Topics(message: types.Message, state: FSMContext):
+   await message.answer("Введите номер телефона в формате +7ХХХХХХХХХХ")
+   await state.set_state(MyDialog.otvet)
+
+@dp.message(MyDialog.otvet)
+async def Mes(message: types.Message, state:FSMContext):
+    if len(message.text) == 12 and "+" in message.text:
+        CreateElement(message.text, message.from_user.full_name + message.text, message.from_user.id,
+                  message.chat.id, message.from_user.full_name, 0)
+        googletable = GetPhoneTable(int(message.text[1::]))
+        if googletable is not None:
+            numb_order = str(googletable['Номер заказа'])
+            topic = await bot.create_forum_topic(-1001842118341, f"{googletable['Имя']} {numb_order}")
+            UpdateElement(message.from_user.id, topic.message_thread_id)
+        else:
+            topic = await bot.create_forum_topic(-1001842118341, f"Без № заказа  {message.from_user.full_name}")
+            UpdateElement(message.from_user.id, topic.message_thread_id)
+        await message.answer(
+            "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся "
+            "оператор (рабочее время 07:00 - 18:00 без выходных)")
+        await state.clear()
+    else:
+        await message.answer(
+            "Номер введен неправильно. Введите номер телефона в формате +7ХХХХХХХХХХ")
 
 
 
@@ -42,21 +67,9 @@ async def send_topics(message: types.Message, state: FSMContext):
         res = GetElementChat2User(message.message_thread_id)
         await bot.send_message(res[0], message.text, disable_web_page_preview=True)
     if message.photo is not None:
-        res = GetElementChat2User(message.from_user.id)
+        res = GetElementChat2User(message.message_thread_id)
         photos = message.photo
         await bot.send_photo(res[0], photos[-1].file_id)
-
-
-@dp.message(F.contact)
-async def Topics(message: types.Message, state: FSMContext):
-    contact = message.contact
-    CreateElement(contact.phone_number, message.from_user.full_name + contact.phone_number, message.from_user.id,
-                  message.chat.id, message.from_user.full_name, 0)
-    topic = await bot.create_forum_topic(-1001842118341, message.from_user.full_name + " " + contact.phone_number)
-    UpdateElement(message.from_user.id, topic.message_thread_id)
-    await message.answer(
-        "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся "
-        "оператор (рабочее время 07:00 - 18:00 без выходных)")
 
 
 
