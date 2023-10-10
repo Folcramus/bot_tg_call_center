@@ -7,7 +7,7 @@ from dotenv import load_dotenv, find_dotenv
 from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from func import CreateElement, UpdateElement, GetElement, GetElementChatUser, GetElementIdTopicChat, \
-    UpdateoOperatorElement, GetElementChat2User
+    GetPhoneElement, GetElementChat2User, UpdatePhoneElement
 from GoogleTableFunc import GetPhoneTable
 from classesBot import MyDialog
 from aiogram.fsm.context import FSMContext
@@ -41,29 +41,33 @@ async def Topics(message: types.Message, state: FSMContext):
 @dp.message(MyDialog.otvet)
 async def Mes(message: types.Message, state: FSMContext):
     if len(message.text) == 12 and "+" in message.text:
-        CreateElement(message.text, message.from_user.full_name + message.text, message.from_user.id,
-                      message.chat.id, message.from_user.full_name, 0)
-        googletable = GetPhoneTable(int(message.text[1::]))
-        if googletable is not None:
-            numb_order = str(googletable['Номер заказа'])
-            topic = await bot.create_forum_topic(int(os.getenv("ID")), f"{googletable['Имя']} № {numb_order}")
-            UpdateElement(message.from_user.id, topic.message_thread_id)
+        print(GetPhoneElement(message.text))
+        if GetPhoneElement(message.text) is not None:
+            UpdatePhoneElement(message.from_user.id, message.text)
         else:
-            topic = await bot.create_forum_topic(int(os.getenv("ID")), f"Без № заказа  {message.from_user.full_name} ")
-            UpdateElement(message.from_user.id, topic.message_thread_id)
+            CreateElement(message.text, message.from_user.full_name + message.text, message.from_user.id,
+                          message.chat.id, message.from_user.full_name, 0)
+            googletable = GetPhoneTable(int(message.text[1::]))
+            if googletable is not None:
+                numb_order = str(googletable['Номер заказа'])
+                topic = await bot.create_forum_topic(int(os.getenv("ID")), f"{googletable['Имя']} № {numb_order}")
+                UpdateElement(message.from_user.id, topic.message_thread_id)
+            else:
+                topic = await bot.create_forum_topic(int(os.getenv("ID")),
+                                                     f"Без № заказа  {message.from_user.full_name} ")
+                UpdateElement(message.from_user.id, topic.message_thread_id)
         await message.answer(
-            "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся "
-            "оператор (рабочее время 07:00 - 18:00 без выходных)")
+                "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся "
+                "оператор (рабочее время 07:00 - 18:00 без выходных)")
         await state.clear()
     else:
         await message.answer(
-            "Номер введен неправильно. Введите номер телефона в формате +7ХХХХХХХХХХ")
+                "Номер введен неправильно. Введите номер телефона в формате +7ХХХХХХХХХХ")
 
 
 @dp.message(F.chat.id == int(os.getenv("ID")))
 async def send_topics(message: types.Message):
     if message.text is not None:
-        print(message.message_thread_id)
         res = GetElementChat2User(message.message_thread_id)
         await bot.send_message(res[0], message.text, disable_web_page_preview=True)
     if message.photo is not None:

@@ -2,7 +2,7 @@ import sqlite3
 from conf import Connect
 
 
-def CreateElement(username, textTopic, id_chat_user, chat_id, usernameunical ,id_topic_user):
+def CreateElement(username, textTopic, id_chat_user, chat_id, usernameunical, id_topic_user):
     conn = Connect()
     cursor = conn.cursor()
     cursor.execute(
@@ -22,21 +22,32 @@ def GetElement(id_chat_user):
         return res
 
 
-def GetElementChatUser(id_chat_user):
+def GetPhoneElement(username):
     conn = Connect()
     cursor = conn.cursor()
-    cursor.execute('SELECT chat_id FROM Users WHERE id_chat_user = ?', (id_chat_user,))
+    cursor.execute('SELECT * FROM Users WHERE username = ?', (username,))
     results = cursor.fetchall()
     for res in results:
         return res
 
-def GetElementChat2User(id_chat_user):
+
+def GetElementChatUser(id_chat_user):
     conn = Connect()
     cursor = conn.cursor()
-    cursor.execute('SELECT chat_id FROM Users WHERE id_topic_user = ?', (id_chat_user,))
+    cursor.execute('SELECT id_chat_user FROM Users WHERE id_chat_user = ?', (id_chat_user,))
     results = cursor.fetchall()
     for res in results:
         return res
+
+
+def GetElementChat2User(id_chat_user):
+    conn = Connect()
+    cursor = conn.cursor()
+    cursor.execute('SELECT id_chat_user FROM Users WHERE id_topic_user = ?', (id_chat_user,))
+    results = cursor.fetchall()
+    for res in results:
+        return res
+
 
 def GetElementIdTopicChat(id_chat_user):
     conn = Connect()
@@ -53,9 +64,9 @@ def UpdateElement(id_chat_user, id_topic_user):
     cursor.execute('UPDATE Users SET id_topic_user = ? WHERE id_chat_user = ?', (id_topic_user, id_chat_user,))
     conn.commit()
     conn.close()
-def UpdateoOperatorElement(operator, usernameunical):
+def UpdatePhoneElement(id_chat_user, username):
     conn = Connect()
     cursor = conn.cursor()
-    cursor.execute('UPDATE Users SET OPERATOR = ? WHERE usernameunical = ?', (operator, usernameunical,))
+    cursor.execute('UPDATE Users SET id_chat_user = ? WHERE username = ?', (id_chat_user, username,))
     conn.commit()
     conn.close()
