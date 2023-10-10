@@ -6,49 +6,50 @@ import os
 from dotenv import load_dotenv, find_dotenv
 from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.fsm.storage.memory import MemoryStorage
-from func import CreateElement, UpdateElement, GetElement, GetElementChatUser, GetElementIdTopicChat, UpdateoOperatorElement, GetElementChat2User
+from func import CreateElement, UpdateElement, GetElement, GetElementChatUser, GetElementIdTopicChat, \
+    UpdateoOperatorElement, GetElementChat2User
 from GoogleTableFunc import GetPhoneTable
 from classesBot import MyDialog
 from aiogram.fsm.context import FSMContext
 
 load_dotenv(find_dotenv())
-lex_imper = list()
-chat_topic_id = ""
 bot = Bot(os.getenv("TOKEN"))
 storage = MemoryStorage()
 dp = Dispatcher(storage=storage)
 
 
 @dp.message(CommandStart())
-async def process_start_command(message: types.Message, state: FSMContext):
+async def process_start_command(message: types.Message):
     if GetElement(message.from_user.id) is not None:
         await message.answer(
             "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся "
             "оператор (рабочее время 07:00 - 18:00 без выходных)")
     else:
         kb = [
-            [types.KeyboardButton(text="Поделится номером")]
+            [types.KeyboardButton(text="Ввести номер")]
         ]
         board = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, one_time_keyboard=True)
-        await message.answer("Здравствуйте! Нажмите на кнопку поделится номером", reply_markup=board)
+        await message.answer("Здравствуйте! Нажмите на кнопку Ввести номер", reply_markup=board)
 
-@dp.message(F.text.lower()  == 'поделится номером')
+
+@dp.message(F.text.lower() == 'ввести номер')
 async def Topics(message: types.Message, state: FSMContext):
-   await message.answer("Введите номер телефона в формате +7ХХХХХХХХХХ")
-   await state.set_state(MyDialog.otvet)
+    await message.answer("Введите номер телефона указанный Вами при заключении договора в формате +7ХХХХХХХХХХ")
+    await state.set_state(MyDialog.otvet)
+
 
 @dp.message(MyDialog.otvet)
-async def Mes(message: types.Message, state:FSMContext):
+async def Mes(message: types.Message, state: FSMContext):
     if len(message.text) == 12 and "+" in message.text:
         CreateElement(message.text, message.from_user.full_name + message.text, message.from_user.id,
-                  message.chat.id, message.from_user.full_name, 0)
+                      message.chat.id, message.from_user.full_name, 0)
         googletable = GetPhoneTable(int(message.text[1::]))
         if googletable is not None:
             numb_order = str(googletable['Номер заказа'])
-            topic = await bot.create_forum_topic(-1001842118341, f"{googletable['Имя']} {numb_order}")
+            topic = await bot.create_forum_topic(int(os.getenv("ID")), f"{googletable['Имя']} № {numb_order}")
             UpdateElement(message.from_user.id, topic.message_thread_id)
         else:
-            topic = await bot.create_forum_topic(-1001842118341, f"Без № заказа  {message.from_user.full_name}")
+            topic = await bot.create_forum_topic(int(os.getenv("ID")), f"Без № заказа  {message.from_user.full_name} ")
             UpdateElement(message.from_user.id, topic.message_thread_id)
         await message.answer(
             "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся "
@@ -59,9 +60,8 @@ async def Mes(message: types.Message, state:FSMContext):
             "Номер введен неправильно. Введите номер телефона в формате +7ХХХХХХХХХХ")
 
 
-
-@dp.message(F.chat.id == -1001842118341)
-async def send_topics(message: types.Message, state: FSMContext):
+@dp.message(F.chat.id == int(os.getenv("ID")))
+async def send_topics(message: types.Message):
     if message.text is not None:
         print(message.message_thread_id)
         res = GetElementChat2User(message.message_thread_id)
@@ -72,10 +72,6 @@ async def send_topics(message: types.Message, state: FSMContext):
         await bot.send_photo(res[0], photos[-1].file_id)
 
 
-
-
-
-
 @dp.message()
 async def Sender(message: types.Message):
     if GetElementChatUser(message.from_user.id) is not None:
@@ -84,23 +80,25 @@ async def Sender(message: types.Message):
             res1 = GetElementIdTopicChat(message.from_user.id)
             photos = message.photo
             if photos is None and message.text is not None:
-                await bot.send_message(-1001842118341, message.text, message_thread_id=res1[0],
+                await bot.send_message(int(os.getenv("ID")), message.text, message_thread_id=res1[0],
                                        disable_web_page_preview=True)
             elif photos is not None:
-                await bot.send_photo(-1001842118341, photos[-1].file_id, message_thread_id=res1[0])
+                await bot.send_photo(int(os.getenv("ID")), photos[-1].file_id, message_thread_id=res1[0])
     else:
         kb = [
-            [types.KeyboardButton(text="Поделится номером", request_contact=True)]
+            [types.KeyboardButton(text="Ввести номер", request_contact=True)]
         ]
         board = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, one_time_keyboard=True)
-        await message.answer("Для того чтобы начать общение с оператором, нажмите на кнопку поделится номером", reply_markup=board)
+        await message.answer("Для того чтобы начать общение с оператором, нажмите на кнопку поделится номером",
+                             reply_markup=board)
 
 
 @dp.message()
 async def main() -> None:
-    await  dp.start_polling(bot)
+    await dp.start_polling(bot)
 
 
 if __name__ == '__main__':
-    logging.basicConfig(level=logging.INFO, stream=sys.stdout)
+    logging.basicConfig(level=logging.INFO, stream=sys.stdout, format='%(asctime)s - %(name)s - %(levelname)s - %('
+                                                                      'message)s')
     asyncio.run(main())
