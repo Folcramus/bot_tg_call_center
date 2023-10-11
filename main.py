@@ -41,7 +41,7 @@ async def Topics(message: types.Message, state: FSMContext):
 @dp.message(MyDialog.otvet)
 async def Mes(message: types.Message, state: FSMContext):
     if len(message.text) == 12 and "+" in message.text:
-        print(GetPhoneElement(message.text))
+
         if GetPhoneElement(message.text) is not None:
             UpdatePhoneElement(message.from_user.id, message.text)
         else:
@@ -53,11 +53,12 @@ async def Mes(message: types.Message, state: FSMContext):
                 topic = await bot.create_forum_topic(int(os.getenv("ID")), f"{googletable['Имя']} № {numb_order}")
                 UpdateElement(message.from_user.id, topic.message_thread_id)
             else:
+                phone = GetPhoneElement(message.text)
                 topic = await bot.create_forum_topic(int(os.getenv("ID")),
-                                                     f"Без № заказа  {message.from_user.full_name} ")
+                                                     f"Без № заказа  {message.from_user.full_name} {phone[1]}")
                 UpdateElement(message.from_user.id, topic.message_thread_id)
         await message.answer(
-                "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся "
+                "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся"
                 "оператор (рабочее время 07:00 - 18:00 без выходных)")
         await state.clear()
     else:
