@@ -29,12 +29,12 @@ async def process_start_command(message: types.Message):
             [types.KeyboardButton(text="Ввести номер")]
         ]
         board = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, one_time_keyboard=True)
-        await message.answer("Здравствуйте! Нажмите на кнопку Ввести номер", reply_markup=board)
+        await message.answer("Здравствуйте! Нажмите на кнопку 'ввести номер'", reply_markup=board)
 
 
 @dp.message(F.text.lower() == 'ввести номер')
 async def Topics(message: types.Message, state: FSMContext):
-    await message.answer("Введите номер телефона указанный Вами при заключении договора в формате +7ХХХХХХХХХХ")
+    await message.answer("Введите номер телефона указанный Вами при заключении договора в формате +7ХХХХХХХХХХ", reply_markup=types.ReplyKeyboardRemove() )
     await state.set_state(MyDialog.otvet)
 
 
@@ -91,10 +91,10 @@ async def Sender(message: types.Message):
                 await bot.send_photo(int(os.getenv("ID")), photos[-1].file_id, message_thread_id=res1[0])
     else:
         kb = [
-            [types.KeyboardButton(text="Ввести номер", request_contact=True)]
+            [types.KeyboardButton(text='Ввести номер', request_contact=True)]
         ]
         board = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, one_time_keyboard=True)
-        await message.answer("Для того чтобы начать общение с оператором, нажмите на кнопку поделится номером",
+        await message.answer("Для того чтобы начать общение с оператором, нажмите на кнопку 'ввести номер'",
                              reply_markup=board)
 
 

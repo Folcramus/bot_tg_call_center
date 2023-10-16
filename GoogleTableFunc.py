@@ -12,11 +12,9 @@ def ConnTable():
 def GetPhoneTable(phone):
     sh = ConnTable()
     data = sh.sheet1.get_all_records()
-    for row in data:
-        if row['Телефон'] == phone:
-            return row
-        else:
-            return None
 
-print(GetPhoneTable(79619749230))
+    for i in range(0,len(data)):
+        if data[i]["Телефон"] == phone:
+            return data[i]
+
 
