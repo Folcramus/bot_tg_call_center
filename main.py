@@ -40,7 +40,7 @@ async def Topics(message: types.Message, state: FSMContext):
 
 @dp.message(MyDialog.otvet)
 async def Mes(message: types.Message, state: FSMContext):
-    if len(message.text) == 12 and "+" in message.text:
+    if len(message.text) == 11 and "7" in message.text:
 
         if GetPhoneElement(message.text) is not None:
             UpdatePhoneElement(message.from_user.id, message.text)
