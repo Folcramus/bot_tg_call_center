@@ -29,12 +29,12 @@ async def process_start_command(message: types.Message):
             [types.KeyboardButton(text="Ввести номер")]
         ]
         board = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, one_time_keyboard=True)
-        await message.answer("Здравствуйте! Нажмите на кнопку 'ввести номер'", reply_markup=board)
+        await message.answer('Здравствуйте! Для того чтобы начать общение с оператором, нажмите на кнопку "Ввести номер"', reply_markup=board)
 
 
 @dp.message(F.text.lower() == 'ввести номер')
 async def Topics(message: types.Message, state: FSMContext):
-    await message.answer("Введите номер телефона указанный Вами при заключении договора в формате +7ХХХХХХХХХХ", reply_markup=types.ReplyKeyboardRemove() )
+    await message.answer("Введите номер телефона указанный Вами при заключении договора в формате 7ХХХХХХХХХХ", reply_markup=types.ReplyKeyboardRemove() )
     await state.set_state(MyDialog.otvet)
 
 
@@ -47,10 +47,10 @@ async def Mes(message: types.Message, state: FSMContext):
         else:
             CreateElement(message.text, message.from_user.full_name + message.text, message.from_user.id,
                           message.chat.id, message.from_user.full_name, 0)
-            googletable = GetPhoneTable(int(message.text[1::]))
+            googletable = GetPhoneTable(int(message.text))
             if googletable is not None:
                 numb_order = str(googletable['Номер заказа'])
-                topic = await bot.create_forum_topic(int(os.getenv("ID")), f"{googletable['Имя']} № {numb_order}")
+                topic = await bot.create_forum_topic(int(os.getenv("ID")), f"{googletable['Номер телефона']}  № {numb_order}  {googletable['ФИО']}")
                 UpdateElement(message.from_user.id, topic.message_thread_id)
             else:
                 phone = GetPhoneElement(message.text)
@@ -58,7 +58,7 @@ async def Mes(message: types.Message, state: FSMContext):
                                                      f"Без № заказа  {message.from_user.full_name} {phone[1]}")
                 UpdateElement(message.from_user.id, topic.message_thread_id)
         await message.answer(
-                "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся"
+                "Здравствуйте! Пожалуйста задайте Ваш вопрос оператору. На ваше обращение ответит первый освободившийся "
                 "оператор (рабочее время 07:00 - 18:00 без выходных)")
         await state.clear()
     else:
@@ -91,10 +91,10 @@ async def Sender(message: types.Message):
                 await bot.send_photo(int(os.getenv("ID")), photos[-1].file_id, message_thread_id=res1[0])
     else:
         kb = [
-            [types.KeyboardButton(text='Ввести номер', request_contact=True)]
+            [types.KeyboardButton(text="Ввести номер")]
         ]
         board = types.ReplyKeyboardMarkup(keyboard=kb, resize_keyboard=True, one_time_keyboard=True)
-        await message.answer("Для того чтобы начать общение с оператором, нажмите на кнопку 'ввести номер'",
+        await message.answer('Для того чтобы начать общение с оператором, нажмите на кнопку "Ввести номер"',
                              reply_markup=board)
 
 
