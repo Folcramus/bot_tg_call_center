@@ -55,7 +55,7 @@ async def Mes(message: types.Message, state: FSMContext):
             else:
                 phone = GetPhoneElement(message.text)
                 topic = await bot.create_forum_topic(int(os.getenv("ID")),
-                                                     f"Без № заказа  {message.from_user.full_name} {phone[1]}")
+                                                     f"{phone[1]} Без № заказа {message.from_user.full_name} ")
                 UpdateElement(message.from_user.id, topic.message_thread_id)
         await message.answer(
                 "✅ Спасибо за предоставленную информацию! Задайте, пожалуйста, ваш вопрос. Первый освободившийся оператор "
