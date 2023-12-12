@@ -8,10 +8,10 @@ from aiogram.filters import CommandStart, CommandObject, Command
 from aiogram.fsm.storage.memory import MemoryStorage
 from func import CreateElement, UpdateElement, GetElement, GetElementChatUser, GetElementIdTopicChat, \
     GetPhoneElement, GetElementChat2User, UpdatePhoneElement
-from GoogleTableFunc import GetPhoneTable
+from GoogleTableFunc import GetPhoneTable, OrderTable
 from classesBot import MyDialog
 from aiogram.fsm.context import FSMContext
-
+from aiogram.utils.markdown import hlink
 load_dotenv(find_dotenv())
 bot = Bot(os.getenv("TOKEN"))
 storage = MemoryStorage()
@@ -51,12 +51,47 @@ async def Mes(message: types.Message, state: FSMContext):
             if googletable is not None:
                 numb_order = str(googletable['Номер заказа'])
                 topic = await bot.create_forum_topic(int(os.getenv("ID")), f"{googletable['Номер телефона']}  № {numb_order}  {googletable['ФИО']}")
+                text = hlink('здесь', 'https://docs.google.com/document/d/1uSv38c2oo4yZgOMhXlGTdlRHXjczOvcu/edit#heading=h.gjdgxs')
+                await bot.send_message(int(os.getenv("ID")), "❓ДЛЯ ОПЕРАТОРОВ \n"
+                                                             "1. При обращении клиента в чат поддержки, создается новая тема (топик) в группе, с номером телефона и номером заявки клиента \n"
+                                                             "2. По номеру телефона в базе заявок происходит поиск. Найденные, по ном. тел. заявки присылаются в чат автоматически \n"
+                                                             "3. Внимание! Заявки в чате доступны в чате только оператору. Клиент их не видит! \n"
+                                                             "полная справка по работе группы чата поддержки СБС "+ text ,
+                                       message_thread_id=topic.message_thread_id,
+                                       disable_web_page_preview=True, parse_mode='HTML')
                 UpdateElement(message.from_user.id, topic.message_thread_id)
+                res = OrderTable(int(message.text))
+                data_res = res.values()
+                for i in data_res:
+                    await bot.send_message(int(os.getenv("ID")), "Заявка из базы данных: \n"
+                                                    "Клиент: " + i[0] + "\n"
+                                                    "📞 Телефон: " + str(i[1]) + "\n"
+                                                   "" + str(i[2]) + "\n"
+                                                "" + i[10] + "\n"
+                                                "📅" + i[3] + " " +  i[4] + " " +  "("+i[5]+")" + "\n"
+                                               "" + i[6] + "\n"
+                                                "" + i[7] + "\n"
+                                                "" + "\n"
+                                           "🛠️ Мастер: " +  i[8] + "\n"
+                                            "📞 Телефон: " + str(i[9]) + "\n",
+                                           message_thread_id=topic.message_thread_id,
+                                           disable_web_page_preview=True)
+
+
             else:
                 phone = GetPhoneElement(message.text)
                 topic = await bot.create_forum_topic(int(os.getenv("ID")),
                                                      f"{phone[1]} Без № заказа {message.from_user.full_name} ")
                 UpdateElement(message.from_user.id, topic.message_thread_id)
+                text = hlink('здесь',
+                             'https://docs.google.com/document/d/1uSv38c2oo4yZgOMhXlGTdlRHXjczOvcu/edit#heading=h.gjdgxs')
+                await bot.send_message(int(os.getenv("ID")), "❓ДЛЯ ОПЕРАТОРОВ \n"
+                                                             "1. При обращении клиента в чат поддержки, создается новая тема (топик) в группе, с номером телефона и номером заявки клиента \n"
+                                                             "2. По номеру телефона в базе заявок происходит поиск. Найденные, по ном. тел. заявки присылаются в чат автоматически \n"
+                                                             "3. Внимание! Заявки в чате доступны в чате только оператору. Клиент их не видит! \n"
+                                                             "полная справка по работе группы чата поддержки СБС " + text,
+                                       message_thread_id=topic.message_thread_id,
+                                       disable_web_page_preview=True, parse_mode='HTML')
         await message.answer(
                 "✅ Спасибо за предоставленную информацию! Задайте, пожалуйста, ваш вопрос. Первый освободившийся оператор "
             "ответит на ваше обращение в рабочее время с 09:00 до 21:00 без выходных.")
