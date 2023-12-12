@@ -51,12 +51,16 @@ async def Mes(message: types.Message, state: FSMContext):
             if googletable is not None:
                 numb_order = str(googletable['Номер заказа'])
                 topic = await bot.create_forum_topic(int(os.getenv("ID")), f"{googletable['Номер телефона']}  № {numb_order}  {googletable['ФИО']}")
-                text = hlink('здесь', 'https://docs.google.com/document/d/1uSv38c2oo4yZgOMhXlGTdlRHXjczOvcu/edit#heading=h.gjdgxs')
+                text = hlink('здесь',
+                             'https://docs.google.com/document/d/1uSv38c2oo4yZgOMhXlGTdlRHXjczOvcu/edit#heading=h.gjdgxs')
+                link = hlink('здесь',
+                             'https://docs.google.com/document/d/1Zn3xdVfs5Ssxa7boG2gAdhbNqsiiR-TxtrgkFDk4cUw/edit?usp=sharing')
                 await bot.send_message(int(os.getenv("ID")), "❓ДЛЯ ОПЕРАТОРОВ \n"
                                                              "1. При обращении клиента в чат поддержки, создается новая тема (топик) в группе, с номером телефона и номером заявки клиента \n"
                                                              "2. По номеру телефона в базе заявок происходит поиск. Найденные, по ном. тел. заявки присылаются в чат автоматически \n"
                                                              "3. Внимание! Заявки в чате доступны в чате только оператору. Клиент их не видит! \n"
-                                                             "полная справка по работе группы чата поддержки СБС "+ text ,
+                                                             "полная справка по работе группы чата поддержки СБС " + text + "\n"
+                                                                                                                            "Примеры ответов и этика общения - " + link,
                                        message_thread_id=topic.message_thread_id,
                                        disable_web_page_preview=True, parse_mode='HTML')
                 UpdateElement(message.from_user.id, topic.message_thread_id)
@@ -85,11 +89,14 @@ async def Mes(message: types.Message, state: FSMContext):
                 UpdateElement(message.from_user.id, topic.message_thread_id)
                 text = hlink('здесь',
                              'https://docs.google.com/document/d/1uSv38c2oo4yZgOMhXlGTdlRHXjczOvcu/edit#heading=h.gjdgxs')
+                link = hlink('здесь',
+                             'https://docs.google.com/document/d/1Zn3xdVfs5Ssxa7boG2gAdhbNqsiiR-TxtrgkFDk4cUw/edit?usp=sharing')
                 await bot.send_message(int(os.getenv("ID")), "❓ДЛЯ ОПЕРАТОРОВ \n"
                                                              "1. При обращении клиента в чат поддержки, создается новая тема (топик) в группе, с номером телефона и номером заявки клиента \n"
                                                              "2. По номеру телефона в базе заявок происходит поиск. Найденные, по ном. тел. заявки присылаются в чат автоматически \n"
                                                              "3. Внимание! Заявки в чате доступны в чате только оператору. Клиент их не видит! \n"
-                                                             "полная справка по работе группы чата поддержки СБС " + text,
+                                                             "полная справка по работе группы чата поддержки СБС " + text + "\n"
+                                                            "Примеры ответов и этика общения - " + link,
                                        message_thread_id=topic.message_thread_id,
                                        disable_web_page_preview=True, parse_mode='HTML')
         await message.answer(
