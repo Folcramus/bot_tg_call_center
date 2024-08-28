@@ -4,7 +4,7 @@ import gspread
 def ConnTable():
     gc = gspread.service_account(filename=r'file.json')
 
-    sh = gc.open_by_key('1P-7eFZ3YXLnuWlEX2_pNLJ2mlKc8Tf7BIU7py4raCo4')
+    sh = gc.open_by_key()
 
     return sh
 
